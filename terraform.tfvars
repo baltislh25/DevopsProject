@@ -29,3 +29,4 @@ igw_name =  "salah-igw"
 
 eip_name = "salah-nat-eip"
 nat_gateway_name = "salah-nat-gateway"
+cluster_name = "salah-eks-cluster"

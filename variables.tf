@@ -36,3 +36,8 @@ variable "eip_name" {
 variable "nat_gateway_name" {
   type = string
 }
+
+variable "cluster_name" {
+  type = string
+}
+ 

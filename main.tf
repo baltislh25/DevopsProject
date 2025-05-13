@@ -44,3 +44,37 @@ module "network" {
 output "vpc_id" {
   value = module.network.vpc_id
 }
+
+module "iam" {
+  source = "./modules/iam"
+  env = local.env
+  eks_cluster_role_name = "salah-eks-cluster-role"
+  eks_node_role_name = "salah-eks-node-role"
+  depends_on = [ module.network]
+}
+
+data "aws_iam_group" "admins"{
+  group_name = "admins"
+}
+
+locals {
+  devops_users =data.aws_iam_group.admins.users[*].arn
+  eks_access_entries_devops = flatten([
+    for user_arn in local.devops_users : {
+      cluster_name = var.cluster_name
+      principal_arn = user_arn
+    }
+  ])
+}
+
+
+module "kubernetes" {
+  source = "./modules/eks"
+  env = local.env
+  cluster_name = var.cluster_name
+  eks_cluster_role_arn = module.iam.iam_cluster_role_arn
+  eks_access_entries_devops = local.eks_access_entries_devops
+  eks_node_role_arn = module.iam.iam_node_role_arn
+  private_subnet_ids = module.network.private_subnet_ids
+  depends_on = [ module.iam, module.network]
+}
